@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 20px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .sidebar a {
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        .dashboard-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .card-content {
+            font-size: 1.2em;
+        }
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+        .col {
+            flex: 1;
+        }
+        .hide-btn {
+            position: absolute;
+            top: 20px;
+            left: 270px;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: left 0.3s ease;
+        }
+        .hide-btn:hover {
+            background-color: #575757;
+        }
+        .section-content {
+            display: none;
+        }
+        canvas {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <h2 style="text-align:center;">Dashboard</h2>
+        <a href="javascript:void(0)" onclick="showSection('settings')">Home Activity</a>
+        <a href="javascript:void(0)" onclick="showSection('home')">Database Tables</a>
+        <a href="javascript:void(0)" onclick="showSection('analytics')">Charts</a>
+        <a href="javascript:void(0)" onclick="showSection('profile')">Settings</a>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <button class="hide-btn" id="toggleSidebarBtn">Hide Sidebar</button>
+        <h1>Welcome to Your Dashboard</h1>
+        
+        <!-- Section Content -->
+        <div id="settings" class="section-content">
+            <div class="dashboard-card">
+                <div class="card-header">Welcome to Activity</div>
+                <div class="row">
+                    <div class="col">
+                        <div class="dashboard-card">
+                            <div class="card-header">Total Sales</div>
+                            <p>Total Sales: ${{ total_sales_amount }}</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dashboard-card">
+                            <div class="card-header">Orders Pending From Suppliers</div>
+                            <div class="card-content">{{pending_orders}}</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dashboard-card">
+                            <div class="card-header">Total Customers</div>
+                            <div class="card-content">{{total_customers}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">Recent Order Activity</div>
+                    <div class="card-content">
+                        <ul>
+                            <li>{{latest_order}}</li>
+                            <li>{{latest_supplier_order}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Content -->
+        <div id="home" class="section-content">
+            <div class="dashboard-card">
+                This is the home section where general information of the TABLES can be shown.
+            </div>
+            <div class="dashboard-card">
+                <h1>Product List</h1>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.product_id }}</td>
+                        <td>{{ product.pName }}</td>
+                        <td>{{ product.pPrice }}</td>
+                        <td>{{ product.description }}</td>
+                        <td>{{ product.category }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No products available</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <h1>Customer List</h1>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.customer_id }}</td>
+                            <td>{{ customer.cName }}</td>
+                            <td>{{ customer.cEmail }}</td>
+                            <td>{{ customer.cPhone }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                        <td colspan="4">No customers available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h1>Orders List</h1>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer ID</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for orders in orders %}
+                        <tr>
+                            <td>{{ orders.order_id }}</td>
+                            <td>{{ orders.customer_id }}</td>
+                            <td>{{ orders.date }}</td>
+                            <td>{{ orders.total_amount }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                        <td colspan="4">No customers available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h1>Supplier Orders List</h1>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Supplier Order ID</th>
+                            <th>Supplier ID</th>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in supplier_orders %}
+                        <tr>
+                            <td>{{ order.supplier_order_id }}</td>
+                            <td>{{ order.supplier_id }}</td>
+                            <td>{{ order.order_date }}</td>
+                            <td>{{ order.status }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                        <td colspan="4">No supplier orders available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <h1>Supplier Order Items List</h1>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Supplier Order Item ID</th>
+                            <th>Supplier Order ID</th>
+                            <th>Inventory ID</th>
+                            <th>Quantity</th>
+                            <th>Item Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in supplier_order_items %}
+                        <tr>
+                            <td>{{ order.supplier_order_item_id }}</td>
+                            <td>{{ order.supplier_order_id }}</td>
+                            <td>{{ order.inventory_id }}</td>
+                            <td>{{ order.quantity }}</td>
+                            <td>{{ order.item_price }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                        <td colspan="4">No supplier order items available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section Content -->
+        <div id="analytics" class="section-content">
+            <div class="dashboard-card">
+                <div class="card-header">Charts</div>
+                <div class="card-content">
+                    This section displays analytics and performance data.
+                    <h3>Data Overview</h3>
+                    <div>
+                        {{ chart_html | safe }}
+                    </div>
+
+
+                    <h1>Top 3 Customers by Total Spending</h1>
+    
+                    <!-- Display the Plotly pie chart -->
+                    <div>
+                        {{ pie_chart_html | safe }}
+                    </div>
+
+                    <h1>Most Popular Addons</h1>
+    
+                    <!-- Display the Plotly pie chart for addons -->
+                    <div>
+                        {{ addons_pie_chart_html | safe }}
+                    </div>
+
+                    <h1>Total Orders Sales Amount Over Time</h1>
+    
+                    <!-- Display the Plotly line chart -->
+                    <div>
+                        {{ line_chart_html | safe }}
+                    </div>
+                    <h1>Supplier Items Quantity vs Price</h1>
+    
+                    <!-- Display the Plotly bar chart -->
+                    <div>
+                        {{ supply_column_chart_html | safe }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Content -->
+        <div id="profile" class="section-content">
+            <div class="dashboard-card">
+                <div class="card-header">Profile</div>
+                <div class="card-content">
+                    View and edit your profile information here.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle the sidebar visibility and move the button
+        document.getElementById('toggleSidebarBtn').addEventListener('click', function() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            var toggleBtn = document.getElementById('toggleSidebarBtn');
+            
+            if (sidebar.style.transform === 'translateX(-250px)') {
+                sidebar.style.transform = 'translateX(0)';
+                mainContent.style.marginLeft = '250px';
+                toggleBtn.textContent = 'Hide Sidebar';
+                toggleBtn.style.left = '270px'; // Reset button position
+            } else {
+                sidebar.style.transform = 'translateX(-250px)';
+                mainContent.style.marginLeft = '0';
+                toggleBtn.textContent = 'Show Sidebar';
+                toggleBtn.style.left = '20px'; // Move button to the side
+            }
+        });
+
+        // Function to show the corresponding section
+        function showSection(sectionId) {
+            // Hide all sections
+            var sections = document.querySelectorAll('.section-content');
+            sections.forEach(function(section) {
+                section.style.display = 'none';
+            });
+
+            // Show the selected section
+            var selectedSection = document.getElementById(sectionId);
+            if (selectedSection) {
+                selectedSection.style.display = 'block';
+            }
+        }
+
+        // Show the home section by default
+        showSection('home');
+
+        // Get chart data passed from Flask (via template rendering)
+        
+
+        // Create the column chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar',  // Bar chart (Column chart)
+            data: {
+                labels: chartData.labels,  // Categories (x-axis labels)
+                datasets: [{
+                    label: 'Dataset',
+                    data: chartData.values,  // Values (y-axis values)
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
